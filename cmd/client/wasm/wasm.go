@@ -7,7 +7,14 @@ import (
 
 // drawLatency is the main function called from JavaScript to draw the latency data on the canvas.
 // It receives the latency value as a float64.
-func drawLatency(latency float64) {
+func drawLatency(this js.Value, args []js.Value) interface{} {
+	if len(args) < 1 {
+		fmt.Println("No latency value provided")
+		return nil
+	}
+
+	latency := args[0].Float()
+
 	// Get the canvas and context from the DOM
 	document := js.Global().Get("document")
 	canvas := document.Call("getElementById", "latencyCanvas")
@@ -29,6 +36,8 @@ func drawLatency(latency float64) {
 	context.Set("fillStyle", "black")
 	context.Set("font", "16px Arial")
 	context.Call("fillText", fmt.Sprintf("Latency: %.2fms", latency*1000), 10, 100)
+
+	return nil
 }
 
 // canvasFillRect is a wrapper function to call fillRect on canvas
@@ -66,6 +75,8 @@ func canvasClearRect(this js.Value, args []js.Value) interface{} {
 }
 
 func RegisterCallbacks() {
+	fmt.Println("Registering WebAssembly callbacks")
+	js.Global().Set("drawLatency", js.FuncOf(drawLatency))
 	js.Global().Set("canvasFillRect", js.FuncOf(canvasFillRect))
 	js.Global().Set("canvasClearRect", js.FuncOf(canvasClearRect))
 }
